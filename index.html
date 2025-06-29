@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #71b7e6, #9b59b6);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .weather-card {
+            text-align: center;
+        }
+
+        .weather-card h1 {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .weather-icon {
+            font-size: 4em;
+            margin: 20px 0;
+        }
+
+        .temperature {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            font-size: 1.2em;
+            color: #666;
+            text-transform: capitalize;
+            margin-bottom: 20px;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .detail-item p:first-child {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .detail-item p:last-child {
+            color: #666;
+        }
+
+        .error {
+            color: #ff0000;
+            font-size: 1.2em;
+            display: none;
+        }
+
+        .loading {
+            font-size: 1.2em;
+            color: #333;
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            .weather-card h1 {
+                font-size: 1.8em;
+            }
+
+            .weather-icon {
+                font-size: 3em;
+            }
+
+            .temperature {
+                font-size: 1.5em;
+            }
+
+            .description {
+                font-size: 1em;
+            }
+
+            .details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="weather-card">
+            <h1 id="location">Fetching location...</h1>
+            <p class="loading" id="loading">Loading weather data...</p>
+            <p class="error" id="error"></p>
+            <div class="weather-icon" id="weather-icon"></div>
+            <div class="temperature" id="temperature"></div>
+            <div class="description" id="description"></div>
+            <div class="details" id="details">
+                <div class="detail-item">
+                    <p>Humidity</p>
+                    <p id="humidity"></p>
+                </div>
+                <div class="detail-item">
+                    <p>Wind Speed</p>
+                    <p id="wind-speed"></p>
+                </div>
+                <div class="detail-item">
+                    <p>Pressure</p>
+                    <p id="pressure"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const weatherIcon = document.getElementById('weather-icon');
+        const temperature = document.getElementById('temperature');
+        const description = document.getElementById('description');
+        const humidity = document.getElementById('humidity');
+        const windSpeed = document.getElementById('wind-speed');
+        const pressure = document.getElementById('pressure');
+        const locationElement = document.getElementById('location');
+        const errorElement = document.getElementById('error');
+        const loadingElement = document.getElementById('loading');
+
+        const weatherEmojis = {
+            'Clear': '☀️',
+            'Clouds': '☁️',
+            'Rain': '🌧️',
+            'Drizzle': '🌦️',
+            'Thunderstorm': '⛈️',
+            'Snow': '❄️',
+            'Mist': '🌫️',
+            'Smoke': '🌫️',
+            'Haze': '🌫️',
+            'Fog': '🌫️'
+        };
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(fetchWeather, showError);
+            } else {
+                showError('Geolocation is not supported by this browser.');
+            }
+        }
+
+        async function fetchWeather(position) {
+            const { latitude, longitude } = position.coords;
+            const url = `http://localhost:3000/weather?lat=${latitude}&lon=${longitude}`;
+
+            try {
+                loadingElement.style.display = 'block';
+                errorElement.style.display = 'none';
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Failed to fetch weather data');
+
+                const data = await response.json();
+                displayWeather(data);
+            } catch (error) {
+                showError('Unable to fetch weather data. Please try again later.');
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        function displayWeather(data) {
+            const { name, main, weather, wind } = data;
+            const weatherCondition = weather[0].main;
+
+            locationElement.textContent = name;
+            weatherIcon.textContent = weatherEmojis[weatherCondition] || '🌤️';
+            temperature.textContent = `${Math.round(main.temp)}°C`;
+            description.textContent = weather[0].description;
+            humidity.textContent = `${main.humidity}%`;
+            windSpeed.textContent = `${wind.speed} m/s`;
+            pressure.textContent = `${main.pressure} hPa`;
+        }
+
+        function showError(message) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            loadingElement.style.display = 'none';
+        }
+
+        getLocation();
+    </script>
+
+</body>
+
+</html>
