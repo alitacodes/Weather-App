@@ -146,7 +146,4 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// // ✅ THIS IS WHAT YOU'RE MISSING
-// app.listen(PORT, () => {
-//   console.log(`Server is running at http://localhost:${PORT}`);
-// });
+module.exports = app;
