@@ -668,11 +668,11 @@
 
         async function fetchWeather(position) {
             const { latitude, longitude } = position.coords;
-            await fetchAndDisplayWeather(`/api/weather/coords?lat=${latitude}&lon=${longitude}`);
+            await fetchAndDisplayWeather(`/api/weather?lat=${latitude}&lon=${longitude}`);
         }
 
         async function fetchWeatherByCity(city) {
-            await fetchAndDisplayWeather(`/api/weather/city/${encodeURIComponent(city)}`);
+            await fetchAndDisplayWeather(`/api/weather?city=${encodeURIComponent(city)}`);
         }
 
         async function fetchAndDisplayWeather(url) {
